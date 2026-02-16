@@ -164,6 +164,7 @@ You can configure the **NodeProvider** with the following options:
 | `vcluster.com/ccm-enabled`    | `true`        | Enables deployment of the Cloud Controller Manager.                                         |
 | `vcluster.com/ccm-lb-enabled` | `true`        | Enables the CCM service controller. If disabled, CCM will not create LoadBalancer services. |
 | `vcluster.com/csi-enabled`    | `true`        | Enables deployment of the CSI driver with a `<provider>-default-disk` storage class.                 |
+| `vcluster.com/nvidia-enabled` | `true`        | Enables deployment of the NVIDIA device plugin DaemonSet for GPU nodes.                     |
 | `vcluster.com/vpc-cidr`       | `10.10.0.0/16` | Sets the VPC CIDR range. Useful in multi-cloud scenarios to avoid CIDR conflicts.           |
 
 ## Example
@@ -188,6 +189,59 @@ privateNodes:
         operator: In
         values: ["e2-medium", "e2-standard-2", "e2-standard-4"]
 ```
+
+## GPU support
+
+Auto Nodes supports GPU-accelerated instances on GCP. There are two GPU provisioning paths depending on the machine family:
+
+### N1 + attached GPU (e.g. Tesla T4)
+
+N1 machines require an explicit `gpu-type` and `gpu-count` in the node type properties. The instance template attaches the GPU as a guest accelerator.
+
+```yaml
+privateNodes:
+  enabled: true
+  autoNodes:
+  - provider: gcp-compute
+    dynamic:
+    - name: gcp-gpu-t4
+      nodeTypeSelector:
+      - property: instance-type
+        operator: In
+        values: ["n1-standard-4"]
+      - property: gpu-type
+        operator: In
+        values: ["nvidia-tesla-t4"]
+```
+
+### G2/A2/A3 with built-in GPU (e.g. L4, A100, H100)
+
+These machine families have GPUs built in -- no `gpu-type` property is needed. The module detects the machine family and automatically uses a Deep Learning VM image with pre-installed NVIDIA drivers.
+
+```yaml
+privateNodes:
+  enabled: true
+  autoNodes:
+  - provider: gcp-compute
+    dynamic:
+    - name: gcp-gpu-l4
+      nodeTypeSelector:
+      - property: instance-type
+        operator: In
+        values: ["g2-standard-4"]
+```
+
+### GPU node type properties
+
+| Property        | Required | Default | Description                                                  |
+| --------------- | -------- | ------- | ------------------------------------------------------------ |
+| `gpu-type`      | No       | `""`    | GCP accelerator type (e.g. `nvidia-tesla-t4`). Only for N1.  |
+| `gpu-count`     | No       | `1`     | Number of GPUs to attach. Only used when `gpu-type` is set.  |
+| `disk-size`     | No       | `100`   | Boot disk size in GB. GPU workloads typically need 200+.     |
+
+### NVIDIA device plugin
+
+When GPU nodes are provisioned, the NVIDIA device plugin DaemonSet is automatically deployed to expose `nvidia.com/gpu` resources to the Kubernetes scheduler. This is controlled by the `vcluster.com/nvidia-enabled` property (default: `true`). GPU nodes use a Deep Learning VM image with pre-installed NVIDIA drivers, so no separate driver installation is needed.
 
 ## Security considerations
 
