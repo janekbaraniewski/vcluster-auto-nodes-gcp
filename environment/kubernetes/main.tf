@@ -36,3 +36,19 @@ module "kubernetes_apply_csi" {
     node_provider_name = local.node_provider_name
   }
 }
+
+##########
+# NVIDIA Device Plugin
+##########
+
+module "kubernetes_apply_nvidia" {
+  source = "./apply"
+
+  for_each = local.nvidia_enabled ? { "enabled" = true } : {}
+
+  manifest_file = "${path.module}/manifests/nvidia.yaml.tftpl"
+  template_vars = {
+    suffix             = local.suffix
+    node_provider_name = local.node_provider_name
+  }
+}

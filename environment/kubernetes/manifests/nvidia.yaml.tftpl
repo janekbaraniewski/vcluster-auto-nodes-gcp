@@ -1,0 +1,90 @@
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: nvidia-${suffix}
+handler: nvidia
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: nvidia-device-plugin-${suffix}
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: nvidia-device-plugin-${suffix}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: nvidia-device-plugin-${suffix}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: nvidia-device-plugin-${suffix}
+subjects:
+- kind: ServiceAccount
+  name: nvidia-device-plugin-${suffix}
+  namespace: kube-system
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: nvidia-device-plugin-${suffix}
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: nvidia-device-plugin-${suffix}
+  template:
+    metadata:
+      labels:
+        app: nvidia-device-plugin-${suffix}
+    spec:
+      containers:
+      - args:
+        - --pass-device-specs
+        - --fail-on-init-error=false
+        - --device-list-strategy=envvar
+        env:
+        - name: DP_DISABLE_HEALTHCHECKS
+          value: xids
+        image: nvcr.io/nvidia/k8s-device-plugin:v0.17.0
+        name: nvidia-device-plugin
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /var/lib/kubelet/device-plugins
+          name: device-plugins
+      nodeSelector:
+        kubernetes.io/os: linux
+        vcluster.loft.sh/node-provider: ${node_provider_name}
+      priorityClassName: system-node-critical
+      serviceAccountName: nvidia-device-plugin-${suffix}
+      tolerations:
+      - operator: Exists
+      volumes:
+      - hostPath:
+          path: /var/lib/kubelet/device-plugins
+          type: Directory
+        name: device-plugins

@@ -10,4 +10,5 @@ locals {
   ccm_enabled    = nonsensitive(try(tobool(var.vcluster.properties["vcluster.com/ccm-enabled"]), true))
   ccm_lb_enabled = nonsensitive(try(tobool(var.vcluster.properties["vcluster.com/ccm-lb-enabled"]), true))
   csi_enabled    = nonsensitive(try(tobool(var.vcluster.properties["vcluster.com/csi-enabled"]), true))
+  nvidia_enabled = nonsensitive(try(tobool(var.vcluster.properties["vcluster.com/nvidia-enabled"]), true))
 }
