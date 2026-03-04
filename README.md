@@ -239,9 +239,9 @@ privateNodes:
 | `gpu-count`     | No       | `1`     | Number of GPUs to attach. Only used when `gpu-type` is set.  |
 | `disk-size`     | No       | `100`   | Boot disk size in GB. GPU workloads typically need 200+.     |
 
-### NVIDIA device plugin
+### GPU nodes
 
-When GPU nodes are provisioned, the NVIDIA device plugin DaemonSet is automatically deployed to expose `nvidia.com/gpu` resources to the Kubernetes scheduler. This is controlled by the `vcluster.com/nvidia-enabled` property (default: `true`). GPU nodes use a Deep Learning VM image with pre-installed NVIDIA drivers, so no separate driver installation is needed.
+GPU nodes use a Deep Learning VM image with pre-installed NVIDIA drivers, so no separate driver installation is needed. Users are responsible for deploying their own GPU device plugin or GPU operator (e.g. NVIDIA GPU Operator) inside their vCluster to expose `nvidia.com/gpu` resources to the Kubernetes scheduler.
 
 ## Security considerations
 
