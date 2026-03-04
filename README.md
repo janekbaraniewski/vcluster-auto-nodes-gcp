@@ -164,6 +164,7 @@ You can configure the **NodeProvider** with the following options:
 | `vcluster.com/ccm-enabled`    | `true`        | Enables deployment of the Cloud Controller Manager.                                         |
 | `vcluster.com/ccm-lb-enabled` | `true`        | Enables the CCM service controller. If disabled, CCM will not create LoadBalancer services. |
 | `vcluster.com/csi-enabled`    | `true`        | Enables deployment of the CSI driver with a `<provider>-default-disk` storage class.                 |
+| `vcluster.com/nvidia-enabled` | `true`        | Enables deployment of the NVIDIA device plugin DaemonSet for GPU nodes.                     |
 | `vcluster.com/vpc-cidr`       | `10.10.0.0/16` | Sets the VPC CIDR range. Useful in multi-cloud scenarios to avoid CIDR conflicts.           |
 
 ## Example

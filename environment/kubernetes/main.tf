@@ -36,4 +36,3 @@ module "kubernetes_apply_csi" {
     node_provider_name = local.node_provider_name
   }
 }
-
